@@ -1,0 +1,137 @@
+/* পুরো পেজের লেআউট এবং স্মুথ অ্যানিমেশন */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #111216; /* ডিপ ডার্ক ব্যাকগ্রাউন্ড */
+    color: #e4e6eb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* চ্যাট বক্সের মেইন কন্টেইনার */
+.chat-container {
+    width: 100%;
+    max-width: 480px;
+    height: 90vh;
+    background: #1c1d22;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #2d3037;
+}
+
+/* চ্যাট হেডার বা ওপরের নাম */
+.chat-header {
+    background: linear-gradient(135deg, #007aff, #0055ff); /* প্রিমিয়াম ব্লু গ্রেডিয়েন্ট */
+    color: #ffffff;
+    padding: 18px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.25rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* মেসেজ স্ক্রিন (স্ক্রোলবারসহ) */
+.message-area {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: #15161a;
+}
+
+/* স্ক্রোলবার সুন্দর করার জন্য সিএসএস */
+.message-area::-webkit-scrollbar {
+    width: 5px;
+}
+.message-area::-webkit-scrollbar-thumb {
+    background: #2d3037;
+    border-radius: 10px;
+}
+
+/* মেসেজের কমন বাবল ডিজাইন */
+.message {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    word-wrap: break-word;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* নিজের পাঠানো মেসেজ (ডানদিকে থাকবে) */
+.message.sent {
+    background: linear-gradient(135deg, #007aff, #0055ff);
+    color: #ffffff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+/* অন্যের পাঠানো মেসেজ (বামদিকে থাকবে) */
+.message.received {
+    background-color: #24252c;
+    color: #e4e6eb;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    border: 1px solid #2d3037;
+}
+
+/* ইনপুট এরিয়া (নিচের অংশ) */
+.input-area {
+    display: flex;
+    padding: 16px;
+    background: #1c1d22;
+    gap: 12px;
+    border-top: 1px solid #2d3037;
+}
+
+/* টেক্সট লেখার বক্স */
+.input-area input {
+    flex: 1;
+    padding: 14px 18px;
+    border: 1px solid #2d3037;
+    border-radius: 25px; /* রাউন্ডেড ইনপুট */
+    background: #15161a;
+    color: #ffffff;
+    outline: none;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+/* ইনপুট বক্সে ক্লিক করলে গ্লো করবে */
+.input-area input:focus {
+    border-color: #007aff;
+    box-shadow: 0 0 8px rgba(0, 122, 255, 0.2);
+}
+
+/* গোল্ডেন বা মডার্ন সেন্ড বাটন */
+.input-area button {
+    background: linear-gradient(135deg, #007aff, #0055ff);
+    color: #ffffff;
+    border: none;
+    padding: 0 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
+}
+
+.input-area button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 122, 255, 0.4);
+}
+
+.input-area button:active {
+    transform: translateY(1px);
+}
