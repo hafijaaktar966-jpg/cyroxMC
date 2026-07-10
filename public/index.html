@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyroxMC Chat & Live Map</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* Custom Login Modal Box */
+        .login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(18, 18, 18, 0.95); display: flex; align-items: center;
+            justify-content: center; z-index: 9999;
+        }
+        .login-box {
+            background: #1e1e1e; padding: 30px; border-radius: 16px; width: 90%;
+            max-width: 380px; box-shadow: 0 4px 20px rgba(0, 173, 181, 0.4);
+            text-align: center; border: 1px solid #2d2d2d;
+        }
+        .login-box h2 { color: #00adb5; margin-bottom: 15px; font-size: 1.6rem; }
+        .login-box input {
+            width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a;
+            border: 1px solid #3d3d3d; color: #fff; border-radius: 8px; font-size: 1rem;
+            outline: none; box-sizing: border-box;
+        }
+        .login-box button {
+            width: 100%; padding: 12px; background: #00adb5; border: none;
+            color: #fff; font-weight: bold; font-size: 1.1rem; border-radius: 8px; cursor: pointer;
+        }
+        .error-message { color: #ff4a4a; font-size: 0.9rem; margin-bottom: 15px; display: none; }
+
+        .chat-header { padding: 15px 20px; text-align: center; font-weight: bold; }
+
+        /* 🗺️ Live Map Container */
+        #map {
+            width: 100%;
+            height: 250px;
+            background: #222;
+            border-bottom: 2px solid #00FFFF;
+        }
+
+        .message-username { font-size: 0.75rem; color: #00adb5; margin-bottom: 2px; font-weight: bold; display: block; }
+        .message.sent .message-username { color: #ffde59; text-align: right; }
+    </style>
+</head>
+<body>
+
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>CyroxMC Chat & Map</h2>
+            <div class="error-message" id="errorMessage">This id is not recognised </div>
+            <form id="loginForm">
+                <input type="text" id="loginName" placeholder="Enter Your Name" required>
+                <input type="text" id="loginID" placeholder="Enter Your ID" required>
+                <button type="submit">Join Room</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <span id="chatHeaderTitle">CyroxMC Chat Room</span>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="message-area" id="messageArea"></div>
+
+        <form class="input-area" id="chatForm">
+            <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        const socket = io("https://cyroxmc-hpsr.onrender.com", { transports: ['websocket', 'polling'] });
+
+        const form = document.getElementById('chatForm');
+        const input = document.getElementById('messageInput');
+        const messageArea = document.getElementById('messageArea');
+        const chatHeaderTitle = document.getElementById('chatHeaderTitle');
+
+        // এখানে নতুন আইডি "20051200" যোগ করা হয়েছে
+        const allowedIDs = ["202504103", "202403011", "20051200"];
+        let username = localStorage.getItem('chat_username');
+        let userId = localStorage.getItem('chat_userid');
+
+        // ম্যাপ ইনিশিয়েলাইজেশন (ডিফল্ট বাংলাদেশ ভিউ)
+        const map = L.map('map').setView([23.6850, 90.3563], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let markers = {}; // সবার লাইভ লোকেশন মার্কার ট্র্যাক করার জন্য
+        let firstLoad = true; // প্রথমবার স্ক্রিন লক করার ভেরিয়েবল
+
+        if (username && userId && allowedIDs.includes(userId)) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            chatHeaderTitle.innerText = `CyroxMC Room (${username})`;
+            startLocationTracking();
+        }
+
+        // Login handle
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nameVal = document.getElementById('loginName').value.trim();
+            const idVal = document.getElementById('loginID').value.trim();
+
+            if (allowedIDs.includes(idVal)) {
+                username = nameVal; userId = idVal;
+                localStorage.setItem('chat_username', username);
+                localStorage.setItem('chat_userid', userId);
+                document.getElementById('loginOverlay').style.display = 'none';
+                chatHeaderTitle.innerText = `CyroxMC Room (${username})`;
+                startLocationTracking();
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('loginID').value = '';
+            }
+        });
+
+        // --- 🛰️ রিয়েল-টাইম লোকেশন ট্র্যাকিং লজিক (সবার পাবলিক ভিউ) ---
+        function startLocationTracking() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    if (firstLoad) {
+                        map.setView([lat, lng], 13);
+                        firstLoad = false;
+                    }
+
+                    // সার্ভারে নিজের লাইভ লোকেশন পাঠানো
+                    socket.emit('update location', { id: userId, user: username, lat: lat, lng: lng });
+                }, (err) => {
+                    console.error("Location error:", err);
+                }, {
+                    enableHighAccuracy: true,
+                    maximumAge: 0
+                });
+            } else {
+                alert("আপনার ফোনে জিপিএস বা লোকেশন সিস্টেম সাপোর্ট করে না।");
+            }
+        }
+
+        // লোকেশন আপডেট রিসিভার
+        socket.on('user location', (data) => {
+            if (markers[data.id]) {
+                map.removeLayer(markers[data.id]);
+            }
+
+            markers[data.id] = L.marker([data.lat, data.lng])
+                .addTo(map)
+                .bindPopup(`<b>${data.user}</b> এখানে আছেন।`);
+                
+            if (data.id !== userId) {
+                markers[data.id].openPopup();
+            }
+        });
+
+        // চ্যাট মেসেজ লজিক
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (input.value.trim() && username && userId) {
+                const messageData = { user: username, id: userId, text: input.value };
+                socket.emit('chat message', messageData);
+                appendMessage(username, input.value, 'sent');
+                input.value = '';
+            }
+        });
+
+        socket.on('chat message', (data) => {
+            if (data.id !== userId) appendMessage(data.user, data.text, 'received');
+        });
+
+        function appendMessage(user, text, type) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', type);
+            messageElement.innerHTML = `<span class="message-username">${user}</span> ${text}`;
+            messageArea.appendChild(messageElement);
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
+    </script>
+</body>
+</html>
