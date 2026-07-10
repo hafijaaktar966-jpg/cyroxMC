@@ -158,7 +158,7 @@
 
             markers[data.id] = L.marker([data.lat, data.lng])
                 .addTo(map)
-                .bindPopup(`<b>${data.user}</b> এখানে আছেন।`);
+                .bindPopup(`<b>${data.user}</b> `);
                 
             if (data.id !== userId) {
                 markers[data.id].openPopup();
