@@ -14,25 +14,32 @@ const io = require('socket.io')(http, {
 
 const PORT = process.env.PORT || 3000;
 
-// public ফোল্ডারের ভেতরের HTML, CSS ফাইল সার্ভ করার জন্য
 app.use(express.static('public'));
 
 app.get('/', (req, res) => {
   res.send('CyroxMC Chat & Live Map Server is Running!');
 });
 
+// 🗺️ সব ইউজারের লাইভ লোকেশন সেভ রাখার অবজেক্ট
+let activeLocations = {};
+
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  // ১. চ্যাট মেসেজ রিসিভ এবং বাকিদের কাছে পাঠানো
+  // চ্যাটে ঢোকার সাথে সাথে ডাটাবেজ বা মেমোরি থেকে পুরাতন সবার লোকেশন নতুন ইউজারকে পাঠানো
+  socket.emit('initial locations', activeLocations);
+
+  // চ্যাট মেসেজ
   socket.on('chat message', (data) => {
     socket.broadcast.emit('chat message', data);
   });
 
-  // ২. লাইভ লোকেশন ডাটা রিসিভ এবং সবার ম্যাপে ব্রডকাস্ট করা
+  // লাইভ লোকেশন আপডেট এবং মেমোরিতে সেভ
   socket.on('update location', (data) => {
-    // এটি io.emit করা হয়েছে যাতে নিজের ও অন্য সবার ম্যাপে রিয়েল-টাইমে মার্কার আপডেট হয়
-    io.emit('user location', data);
+    if (data.id && data.lat && data.lng) {
+      activeLocations[data.id] = data; // মেমোরিতে সেভ রাখা হলো
+      io.emit('user location', data); // সবাইকে পাঠানো হলো
+    }
   });
 
   socket.on('disconnect', () => {
