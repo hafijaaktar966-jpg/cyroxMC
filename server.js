@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-app.use(express.static('public'));
+app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
   res.send('CyroxMC Super Chat & AI Map Server is Running!');
