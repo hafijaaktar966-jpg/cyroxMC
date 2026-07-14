@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andromeda AI Creation Suite</title>
+    <!-- তোমার নিজের style.css ফাইলটি এখানে লিঙ্ক করা আছে -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Andromeda AI Creation Suite</h1>
+            <button id="back-btn" class="back-btn">❌ Back to Chat</button>
+        </header>
+
+        <!-- ট্যাব সিলেকশন (তোমার স্ক্রিনশট অনুযায়ী) -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="chatbot">🤖 AI Chatbot</button>
+            <button class="tab-btn" data-tab="image">🖼️ Image Generator</button>
+            <button class="tab-btn" data-tab="video">🎬 Video Generator</button>
+        </div>
+
+        <!-- চ্যাট এরিয়া -->
+        <div class="tab-content active" id="chatbot">
+            <div class="chat-container">
+                <div id="chat-messages" class="chat-messages">
+                    <div class="message ai-message">
+                        <span class="sender">AI:</span> Hello! How can I assist you today? Ask me anything!
+                    </div>
+                </div>
+                
+                <form id="chat-form" class="chat-form">
+                    <input type="text" id="message-input" placeholder="Ask Andromeda anything..." required autocomplete="off">
+                    <button type="submit" id="send-btn">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.io ক্লায়েন্ট স্ক্রিপ্ট (এটি সার্ভার থেকে অটোমেটিক লোড হবে, তাই ডিলিট করবে না) -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- তোমার মেইন জাভাস্ক্রিপ্ট ফাইল -->
+    <script src="script.js"></script>
+</body>
+  </html>
