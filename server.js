@@ -37,10 +37,10 @@ if (apiKey) {
 }
 
 // স্ট্যাটিক ফাইল ও ক্লায়েন্ট সার্ভ করা
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'public'));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public 'index.html'));
 });
 
 // Socket.io রিয়েল-টাইম কানেকশন হ্যান্ডলিং
